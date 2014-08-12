@@ -9,9 +9,34 @@ import net.devcat.jmschannel.ChannelType;
 import net.devcat.jmschannel.JMSOutChannel;
 import net.devcat.jmschannel.exceptions.JMSChannelException;
 
+import net.devcat.avro.model.User;
+
 public class JMSProducer {
 
     JMSProducer() {
+    }
+
+    private static void sendTextMsg(JMSOutChannel outChannel, String msg,
+                int count) {
+        TextMessage textMsg = null;
+        for (int i = 0; i < count; i++) {
+            textMsg = outChannel.getTextMessage(Integer.toString(i)+":"+msg);
+            outChannel.sendMsg(textMsg);
+        }
+    }
+
+    private static void sendAvroMsg(JMSOutChannel outChannel, int count) {
+        User user = User.newBuilder()
+            .setFirstName("John")
+            .setLastName("Blow")
+            .setCity("San Jose")
+            .setState("CA")
+            .build();
+ 
+        AvroProducer avroProducer = new AvroProducer();
+        for (int i = 0; i < count; i++) {
+            avroProducer.publish(outChannel, user);
+        }
     }
 
     private static Connection getConnection(String url) {
@@ -30,17 +55,18 @@ public class JMSProducer {
     private static void doUsage() {
         java.lang.System.out.println(
             "USAGE: --type <TOPIC|QUEUE> --name <name>\n" +
-            "       --msg <message string> --count <message count>\n");
+            "       --msg <message string> --count <message count>\n" +
+            "USAGE: --type <TOPIC|QUEUE> --avro --count <message count>\n"); 
     }
 
     public static void main(String[] argv) {
-        String name = null;
-        String msg = null;
+        String name = "MyTopic";
+        String msg = "This is a test message.";
         int count = 1;
-        ChannelType type = ChannelType.UNKNOWN;
+        ChannelType type = ChannelType.TOPIC;
         JMSOutChannel outChannel = null;
         Connection connection = null;
-        TextMessage textMsg = null;
+        boolean avroFlag = false;
 
         if (argv.length >= 1) {
             for (int i = 0; i < argv.length; i++) {
@@ -62,6 +88,8 @@ public class JMSProducer {
                 } else if (argv[i].equals("--msg")) {
                     i++;
                     msg = argv[i];
+                } else if (argv[i].equals("--avro")) {
+                    avroFlag = true;
                 } else if (argv[i].equals("--count")) {
                 	i++;
                     count = Integer.valueOf(argv[i]);
@@ -81,9 +109,10 @@ public class JMSProducer {
             System.exit(-1);
         }
 
-        for (int i = 0; i < count; i++) {
-            textMsg = outChannel.getTextMessage(Integer.toString(i)+":"+msg);
-            outChannel.sendMsg(textMsg);
+        if (avroFlag) {
+            sendAvroMsg(outChannel, count);
+        } else {
+            sendTextMsg(outChannel, msg, count);
         }
         System.exit(0);
     }
