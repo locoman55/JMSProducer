@@ -33,9 +33,9 @@ public class JMSProducer {
             .setState("CA")
             .build();
  
-        AvroProducer avroProducer = new AvroProducer();
+        UserProducer userProducer = new UserProducer();
         for (int i = 0; i < count; i++) {
-            avroProducer.publish(outChannel, user);
+            userProducer.publish(outChannel, user);
         }
     }
 

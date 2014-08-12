@@ -18,12 +18,12 @@ import org.apache.commons.io.IOUtils;
 import net.devcat.jmschannel.JMSOutChannel;
 import net.devcat.avro.model.User;
 
-public class AvroProducer {
+public class UserProducer {
     private static final SpecificDatumWriter<User> avroUserWriter = 
         new SpecificDatumWriter<User>(User.SCHEMA$);
     private static final EncoderFactory encoderFactory = EncoderFactory.get();
 
-    public AvroProducer() {
+    public UserProducer() {
 
     }
 
